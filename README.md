@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/banner.png" width="720" alt="AgentBuddy"></p>
 
-<p align="center"><a href="docs/demo.mp4"><img src="docs/demo.jpg" width="720" alt="Watch the 20-second AgentBuddy demo"></a><br><sub>▶ Click to watch the 20-second demo</sub></p>
+https://github.com/user-attachments/assets/2746defc-757a-4786-b602-9ba82e77acd1
 
 <p align="center">Every Claude Code session, at a glance, in your Mac's notch.<br>
 See who's working, who's done, and who needs you — and answer them without switching windows.</p>
