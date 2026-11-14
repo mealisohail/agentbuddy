@@ -29,17 +29,17 @@ Needs macOS 14 (Sonoma) or newer, Apple Silicon or Intel.
 **One line (Terminal):**
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/OWNER/agentbuddy/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/mealisohail/agentbuddy/main/install.sh | sh
 ```
 
 **Homebrew:**
 
 ```sh
-brew tap OWNER/agentbuddy https://github.com/OWNER/agentbuddy
+brew tap mealisohail/agentbuddy https://github.com/mealisohail/agentbuddy
 brew install --cask agentbuddy
 ```
 
-**Manual:** download `AgentBuddy.zip` from [Releases](https://github.com/OWNER/agentbuddy/releases), unzip, move `AgentBuddy.app` to Applications, then **right-click → Open** the first time.
+**Manual:** download `AgentBuddy.zip` from [Releases](https://github.com/mealisohail/agentbuddy/releases), unzip, move `AgentBuddy.app` to Applications, then **right-click → Open** the first time.
 
 > **Why the extra step?** AgentBuddy is free and isn't notarized by Apple (that needs a paid developer account), so macOS warns about apps downloaded through a browser. The one-line and Homebrew installers take care of this for you. If macOS still says the app "can't be opened", run
 > `xattr -dr com.apple.quarantine ~/Applications/AgentBuddy.app` (or `/Applications/…`) and open it again.

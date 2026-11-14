@@ -1,9 +1,9 @@
 #!/bin/sh
 # AgentBuddy installer — downloads the latest release into ~/Applications and opens it.
-#   curl -fsSL https://raw.githubusercontent.com/OWNER/agentbuddy/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/mealisohail/agentbuddy/main/install.sh | sh
 # Nothing here needs sudo. Read it first if you like; it's short.
 set -e
-REPO="${AGENTBUDDY_REPO:-OWNER/agentbuddy}"
+REPO="${AGENTBUDDY_REPO:-mealisohail/agentbuddy}"
 DEST="$HOME/Applications"
 URL="${AGENTBUDDY_URL:-https://github.com/$REPO/releases/latest/download/AgentBuddy.zip}"
 

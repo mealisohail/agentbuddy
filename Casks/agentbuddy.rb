@@ -2,10 +2,10 @@ cask "agentbuddy" do
   version "1.0.0"
   sha256 "42360b6e4a6730a525efe4af26dfde82e102abe239ee4e77f93035bb8c9a6872"
 
-  url "https://github.com/OWNER/agentbuddy/releases/download/v#{version}/AgentBuddy.zip"
+  url "https://github.com/mealisohail/agentbuddy/releases/download/v#{version}/AgentBuddy.zip"
   name "AgentBuddy"
   desc "Notch island that watches your Claude Code sessions and answers their prompts"
-  homepage "https://github.com/OWNER/agentbuddy"
+  homepage "https://github.com/mealisohail/agentbuddy"
 
   depends_on macos: ">= :sonoma"
 
