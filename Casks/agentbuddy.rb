@@ -1,6 +1,6 @@
 cask "agentbuddy" do
-  version "1.0.0"
-  sha256 "42360b6e4a6730a525efe4af26dfde82e102abe239ee4e77f93035bb8c9a6872"
+  version "1.0.1"
+  sha256 "b031ba7907ead386e956902acddc44a168bcf4dcbf1c7efd623294b07b01d7ba"
 
   url "https://github.com/mealisohail/agentbuddy/releases/download/v#{version}/AgentBuddy.zip"
   name "AgentBuddy"
