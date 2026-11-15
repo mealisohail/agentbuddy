@@ -16,6 +16,7 @@ See who's working, who's done, and who needs you — and answer them without swi
 ## What it does
 
 - **Finds every session automatically.** Claude Code in Terminal, iTerm2, tmux or VS Code (and VS Code forks such as Cursor) shows up on its own. No setup per project.
+- **oh-my-pi too.** If [oh-my-pi](https://github.com/can1357/oh-my-pi) (`omp`) is installed, AgentBuddy adds a small extension to `~/.omp/agent/extensions` and shows those sessions alongside Claude Code ones: working, done, waiting for an approval, and each step. oh-my-pi's approvals are answered in its own prompt; AgentBuddy jumps you there. Restart running `omp` sessions once to load it.
 - **Lives in the notch.** Collapsed, it's a small black pill around the notch: your sessions' robots on the left, how many need you on the right. Hover to open it; move away, click elsewhere or press <kbd>Esc</kbd> to close it. On Macs without a notch it hangs under the menu bar.
 - **Needs you · Working · Idle.** Sessions that need you come first with a lime ring. Working ones are highlighted with their live activity ("Run unit tests", "Edit coupon.ts"). Idle ones are dimmed.
 - **Honest progress.** One tick per tool call (failures in red) and a live timer. A real "3/5" only when the session keeps a todo list.
@@ -63,7 +64,7 @@ The first time you click ⌖ or send a message to a Terminal/iTerm session, macO
 ## Uninstall
 
 ```sh
-~/Applications/AgentBuddy.app/Contents/MacOS/AgentBuddy --uninstall-hook   # take the hook out of ~/.claude/settings.json
+~/Applications/AgentBuddy.app/Contents/MacOS/AgentBuddy --uninstall-hook   # removes the Claude Code hook and the oh-my-pi extension
 rm -rf ~/Applications/AgentBuddy.app ~/.agentbuddy
 ```
 

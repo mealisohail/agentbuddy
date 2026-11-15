@@ -86,6 +86,7 @@ final class AppModel {
     @ObservationIgnored private(set) var reading = false
     @ObservationIgnored private var loaded = false
     @ObservationIgnored private let home = FileManager.default.homeDirectoryForCurrentUser
+    @ObservationIgnored private var ompExtensionChecked = false
 
     var visible: [Session] {
         sessions.filter { s in
@@ -154,6 +155,16 @@ final class AppModel {
         var seen: [String: Session] = [:]
         for s in next where (seen[s.id]?.startedAt ?? -1) < s.startedAt { seen[s.id] = s }
         next = Array(seen.values)
+        // omp may be installed after AgentBuddy started: add the extension once its agent dir shows up
+        if !ompExtensionChecked, FileManager.default.fileExists(atPath: Omp.agentDir.path) {
+            Omp.installExtension()
+            ompExtensionChecked = true
+        }
+        for var s in Omp.sessions() {
+            s.host = sessions.first { $0.id == s.id && $0.pid == s.pid }?.host
+                ?? Focus.hostApp(pid: s.pid)?.localizedName ?? (s.tmux != nil ? "tmux" : "Terminal")
+            next.append(s)
+        }
 
         resolveElsewhere(next)
         if loaded { announce(old: sessions, new: next) }
@@ -167,7 +178,7 @@ final class AppModel {
         // Transcripts can be tens of MB: read them off the main thread, then fold results in.
         guard !reading else { return }
         reading = true
-        let targets = next.map { ($0.id, $0.cwd) }
+        let targets = next.filter { $0.entrypoint != "omp" }.map { ($0.id, $0.cwd) }   // omp state carries its own steps
         DispatchQueue.global(qos: .utility).async { [reader] in
             let fresh = reader.update(targets)
             DispatchQueue.main.async {

@@ -95,7 +95,10 @@ export default function Home() {
               </div>
             </div>
           }>
-          <ul><li style={dot('teal')}><b>Works with</b> Terminal, iTerm2, tmux, VS Code and Cursor.</li></ul>
+          <ul>
+            <li style={dot('teal')}><b>Works with</b> Terminal, iTerm2, tmux, VS Code and Cursor.</li>
+            <li style={dot('violet')}><b>oh-my-pi too.</b> Its <code>omp</code> sessions show up alongside Claude Code, with every step. Approvals stay in omp&apos;s own prompt, one click away.</li>
+          </ul>
         </Feature>
 
         <div className="small">

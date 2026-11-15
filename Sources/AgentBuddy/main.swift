@@ -5,6 +5,7 @@ import SwiftUI
 if CommandLine.arguments.contains("--hook") { HookBridge.runHook() }
 if CommandLine.arguments.contains("--version") { print("AgentBuddy \(appVersion)"); exit(0) }
 if CommandLine.arguments.contains("--uninstall-hook") {
+    Omp.removeExtension()
     do { try HookInstaller.set(installed: false); print("Removed the AgentBuddy hook from ~/.claude/settings.json") }
     catch { print("Couldn't update ~/.claude/settings.json: \(error.localizedDescription)"); exit(1) }
     exit(0)
@@ -66,6 +67,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if model.hookInstalled && !HookInstaller.pointsHere {
             try? HookInstaller.set(installed: true)     // app moved or renamed: repoint the hook at this copy
         }
+        Omp.installExtension()
         makePanel()
         makeStatusItem()
         model.onAttention = { [weak self] in self?.peek() }

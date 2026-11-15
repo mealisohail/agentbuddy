@@ -126,6 +126,22 @@ extension SelfTest {
         park(); m.resolveElsewhere([])
         assert(m.pending["s1"] == nil && !m.holdingOpen, "session gone → card cleared")
 
+        // oh-my-pi state written by the extension becomes a normal session
+        let omp = Omp.session(from: [
+            "sessionId": "o1", "pid": 7, "cwd": "/x/shop", "status": "waiting", "waitingFor": "approve Bash",
+            "title": "Fix rounding", "prompt": "fix it", "statusUpdatedAt": 1_700_000_000_000.0, "lastCommand": "npm test",
+            "commandRunning": true,
+            "steps": [["id": "a", "tool": "Read", "text": "Read cart.ts", "state": "done"],
+                      ["id": "b", "tool": "Bash", "text": "Run npm test", "state": "running"],
+                      ["id": "c", "tool": "Edit", "text": "Edit cart.ts", "state": "failed"], ["bad": 1]],
+        ], id: "o1", pid: 7, cwd: "/x/shop")
+        assert(omp.status == .waiting && omp.waitingFor == "approve Bash" && omp.title == "Fix rounding" && omp.entrypoint == "omp")
+        assert(omp.info.steps.map(\.state) == [.done, .running, .failed], "malformed steps skipped")
+        assert(omp.info.prompt == "fix it" && omp.info.lastCommand == "npm test" && omp.info.commandRunning && !omp.isEditor)
+        assert(omp.statusSince == Date(timeIntervalSince1970: 1_700_000_000))
+        assert(Omp.session(from: ["status": "busy"], id: "o2", pid: 8, cwd: "/y").status == .busy)
+        assert(Omp.extensionSource.contains("export default function agentbuddy"))
+
         // Text fields get ⌘V & co. even though a menu-bar app has no Edit menu
         assert(IslandPanel.editAction(flags: .command, key: "v") == #selector(NSText.paste(_:)))
         assert(IslandPanel.editAction(flags: [.command, .capsLock], key: "V") == #selector(NSText.paste(_:)), "caps lock on")
