@@ -3,7 +3,7 @@
 # ./build.sh --release  universal (Apple Silicon + Intel) build → dist/AgentBuddy.zip, and update the Homebrew cask's sha256
 set -e
 cd "$(dirname "$0")"
-VERSION=1.0.1
+VERSION=1.0.2
 BUILD=1
 BUNDLE_ID=dev.agentbuddy.app
 
