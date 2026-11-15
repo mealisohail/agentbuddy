@@ -125,6 +125,38 @@ extension SelfTest {
 
         park(); m.resolveElsewhere([])
         assert(m.pending["s1"] == nil && !m.holdingOpen, "session gone → card cleared")
+
+        // Text fields get ⌘V & co. even though a menu-bar app has no Edit menu
+        assert(IslandPanel.editAction(flags: .command, key: "v") == #selector(NSText.paste(_:)))
+        assert(IslandPanel.editAction(flags: [.command, .capsLock], key: "V") == #selector(NSText.paste(_:)), "caps lock on")
+        assert(IslandPanel.editAction(flags: [.command, .shift], key: "Z") == Selector(("redo:")))
+        assert(IslandPanel.editAction(flags: [.command, .option], key: "v") == nil && IslandPanel.editAction(flags: .command, key: "q") == nil)
+
+        // Already looking at the session: no pop-up or chime; speak up only once you look away and it still needs you.
+        let wasMuted = m.muted; m.muted = true
+        defer { m.muted = wasMuted; m.isFront = { Focus.isFront($0) }; m.onAttention = nil; m.sessions = [] }
+        var front = true, alerts = 0
+        m.isFront = { _ in front }; m.onAttention = { alerts += 1 }
+        m.sessions = [session(.busy)]
+        func ask() { m.add(PendingRequest(sessionId: "s1", tool: "AskUserQuestion", input: [:]) { _ in }) }
+
+        ask()
+        assert(!m.holdingOpen && alerts == 0 && m.quiet == ["s1"], "looking at it → stays quiet")
+        m.recheckQuiet([session(.waiting)])
+        assert(!m.holdingOpen && alerts == 0, "still looking → still quiet")
+        front = false; m.recheckQuiet([session(.waiting)])
+        assert(m.holdingOpen && alerts == 1 && m.quiet.isEmpty, "looked away, still unanswered → opens once")
+        m.recheckQuiet([session(.waiting)])
+        assert(alerts == 1, "no repeat alert")
+
+        m.pending = [:]; m.holdingOpen = false; front = true
+        ask(); m.pending = [:]                        // answered in Claude's own prompt
+        front = false; m.recheckQuiet([session(.busy)])
+        assert(!m.holdingOpen && alerts == 1 && m.quiet.isEmpty, "answered before looking away → never opens")
+
+        front = false; ask()
+        assert(m.holdingOpen && alerts == 2, "not looking → opens right away, as before")
+        m.pending = [:]; m.holdingOpen = false
     }
 }
 

@@ -38,6 +38,51 @@ enum Focus {
         return (false, "Copied — paste with ⌘V in \(s.host)")
     }
 
+    /// Whether you're looking at this session right now: its app is frontmost and, where we can tell, its tab or pane is the selected one.
+    /// Unsure counts as "not looking", so AgentBuddy speaks up as it always has.
+    @MainActor static func isFront(_ s: Session) -> Bool {
+        guard let front = NSWorkspace.shared.frontmostApplication else { return false }
+        if let pane = s.tmux?.split(separator: ".").last.map(String.init), let tmux = tmuxPath {
+            // tmux's server isn't a child of the terminal, so look at the pane and at the terminals attached to it
+            let session = String(s.tmux!.prefix { $0 != ":" })
+            guard output(tmux, ["display-message", "-p", "-t", pane, "#{window_active}#{pane_active}"]) == "11" else { return false }
+            let clients = output(tmux, ["list-clients", "-t", session, "-F", "#{client_pid}"]) ?? ""
+            return clients.split(separator: "\n").contains { hostApp(pid: pid_t($0) ?? 0) == front }
+        }
+        guard let app = hostApp(pid: s.pid), app == front, let bid = app.bundleIdentifier else { return false }
+        if editors.contains(bid) { return true }   // ponytail: editors have no per-window API, so any window of the app counts
+        guard let tty = tty(of: s.pid), canAutomate(bid) else { return false }
+        let script = switch bid {
+        case "com.apple.Terminal": #"tell application "Terminal" to return tty of selected tab of front window"#
+        case "com.googlecode.iterm2": #"tell application id "com.googlecode.iterm2" to return tty of current session of current window"#
+        default: ""
+        }
+        guard !script.isEmpty else { return false }
+        var err: NSDictionary?
+        return NSAppleScript(source: script)?.executeAndReturnError(&err).stringValue == tty
+    }
+
+    /// True only if Automation was already granted; never shows the consent prompt (that's left to ⌖ and Send).
+    static func canAutomate(_ bundleId: String) -> Bool {
+        var addr = AEAddressDesc()
+        let bytes = Array(bundleId.utf8)
+        guard AECreateDesc(typeApplicationBundleID, bytes, bytes.count, &addr) == noErr else { return false }
+        defer { AEDisposeDesc(&addr) }
+        return AEDeterminePermissionToAutomateTarget(&addr, typeWildCard, typeWildCard, false) == noErr
+    }
+
+    static func output(_ exe: String, _ args: [String]) -> String? {
+        let p = Process(), pipe = Pipe()
+        p.executableURL = URL(fileURLWithPath: exe)
+        p.arguments = args
+        p.standardOutput = pipe
+        p.standardError = FileHandle.nullDevice
+        guard (try? p.run()) != nil else { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        return p.terminationStatus == 0 ? String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines) : nil
+    }
+
     static let tmuxPath = ["/opt/homebrew/bin/tmux", "/usr/local/bin/tmux", "/usr/bin/tmux"].first { FileManager.default.isExecutableFile(atPath: $0) }
 
     static func run(_ exe: String, _ args: [String]) -> Bool {
@@ -71,7 +116,7 @@ enum Focus {
             """
         case "com.googlecode.iterm2":
             script = """
-            tell application "iTerm2"
+            tell application id "com.googlecode.iterm2"
               repeat with w in windows
                 repeat with t in tabs of w
                   repeat with s in sessions of t
@@ -141,7 +186,7 @@ enum Focus {
             """
         case "com.googlecode.iterm2":
             script = """
-            tell application "iTerm2"
+            tell application id "com.googlecode.iterm2"
               repeat with w in windows
                 repeat with t in tabs of w
                   repeat with s in sessions of t

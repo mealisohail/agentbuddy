@@ -77,6 +77,8 @@ final class AppModel {
     }
     var dismissed: [String: Date] = [:]                   // sessionId -> statusSince when dismissed
     var onAttention: (() -> Void)?
+    @ObservationIgnored var isFront: (Session) -> Bool = { Focus.isFront($0) }
+    @ObservationIgnored private(set) var quiet: Set<String> = []   // needs you, but you were already looking at it
 
     @ObservationIgnored private var colors: [String: Int] = [:]
     @ObservationIgnored private let reader = TranscriptReader()
@@ -155,6 +157,7 @@ final class AppModel {
 
         resolveElsewhere(next)
         if loaded { announce(old: sessions, new: next) }
+        recheckQuiet(next)
         loaded = true
         if next != sessions { sessions = next }
         let live = Set(next.map(\.id))
@@ -201,8 +204,22 @@ final class AppModel {
     private func announce(old: [Session], new: [Session]) {
         let before = Dictionary(old.map { ($0.id, $0.status) }, uniquingKeysWith: { a, _ in a })
         for s in new {
-            if s.status == .waiting, before[s.id] != .waiting, pending[s.id] == nil { attention() }
+            if s.status == .waiting, before[s.id] != .waiting, pending[s.id] == nil {
+                if isFront(s) { quiet.insert(s.id) } else { attention() }
+            }
             if s.status == .idle, before[s.id] == .busy { play("Tink") }
+        }
+    }
+
+    /// Something that arrived while you were looking at its session: speak up once you look away, if it still needs you.
+    /// ponytail: re-checks every refresh tick (one AppleScript call/s) only while something is held back.
+    func recheckQuiet(_ next: [Session]) {
+        for id in quiet {
+            guard let s = next.first(where: { $0.id == id }), pending[id] != nil || s.status == .waiting else { quiet.remove(id); continue }
+            guard !isFront(s) else { continue }
+            quiet.remove(id)
+            if pending[id] != nil { holdingOpen = true }
+            attention()
         }
     }
 
@@ -231,6 +248,7 @@ final class AppModel {
         pending[r.sessionId]?.reply(.passthrough)   // a newer request supersedes an unanswered older one
         pending[r.sessionId] = r
         dismissed[r.sessionId] = nil
+        if let s = sessions.first(where: { $0.id == r.sessionId }), isFront(s) { quiet.insert(r.sessionId); return }
         holdingOpen = true
         attention()
     }

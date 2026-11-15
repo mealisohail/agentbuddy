@@ -26,6 +26,26 @@ MainActor.assumeIsolated {
 /// and it ignores the mouse everywhere outside the island so the menu bar and apps below stay clickable.
 final class IslandPanel: NSPanel {
     override var canBecomeKey: Bool { true }   // lets the "Other…" answer field take typing
+
+    /// A menu-bar app has no Edit menu, and that menu is what normally turns ⌘V/⌘C/⌘X/⌘A/⌘Z into actions.
+    /// Without this, paste, copy and undo do nothing in the message and "Other…" fields.
+    override func performKeyEquivalent(with e: NSEvent) -> Bool {
+        if let sel = Self.editAction(flags: e.modifierFlags, key: e.charactersIgnoringModifiers ?? ""),
+           NSApp.sendAction(sel, to: nil, from: self) { return true }
+        return super.performKeyEquivalent(with: e)
+    }
+
+    static func editAction(flags: NSEvent.ModifierFlags, key: String) -> Selector? {
+        switch (flags.intersection(.deviceIndependentFlagsMask).subtracting(.capsLock), key.lowercased()) {
+        case (.command, "x"): #selector(NSText.cut(_:))
+        case (.command, "c"): #selector(NSText.copy(_:))
+        case (.command, "v"): #selector(NSText.paste(_:))
+        case (.command, "a"): #selector(NSText.selectAll(_:))
+        case (.command, "z"): Selector(("undo:"))
+        case ([.command, .shift], "z"): Selector(("redo:"))
+        default: nil
+        }
+    }
 }
 
 @MainActor
