@@ -173,6 +173,20 @@ extension SelfTest {
         front = false; ask()
         assert(m.holdingOpen && alerts == 2, "not looking → opens right away, as before")
         m.pending = [:]; m.holdingOpen = false
+
+        // omp approvals keep the island open (not a 4 s peek) until answered in omp or closed
+        func ompSession(_ st: Session.Status) -> Session { Omp.session(from: ["status": "\(st)"], id: "o1", pid: 1, cwd: "/x") }
+        m.announce(old: [ompSession(.busy)], new: [ompSession(.waiting)])
+        assert(m.holdingOpen && alerts == 3, "omp approval → island held open")
+        m.resolveElsewhere([ompSession(.waiting)])
+        assert(m.holdingOpen, "still waiting → stays open across refreshes")
+        m.resolveElsewhere([ompSession(.busy)])
+        assert(!m.holdingOpen, "answered in omp → closes")
+        m.announce(old: [ompSession(.busy)], new: [ompSession(.waiting)]); m.close()
+        m.resolveElsewhere([ompSession(.waiting)])
+        assert(!m.holdingOpen, "closed by hand → stays closed")
+        m.resolveElsewhere([session(.waiting)])
+        assert(!m.holdingOpen, "a Claude session waiting without a hook request still only peeks")
     }
 }
 

@@ -154,7 +154,8 @@ enum HookBridge {
         switch cmd {
         case "state":
             h.refresh()
-            return ["expanded": h.expanded, "sessions": h.sessions.map { s -> [String: Any] in
+            return ["expanded": h.expanded, "holdingOpen": h.holdingOpen, "peeking": h.peeking, "hovering": h.hovering,
+                    "quiet": Array(h.quiet), "sessions": h.sessions.map { s -> [String: Any] in
                 var d: [String: Any] = ["id": s.id, "status": "\(s.status)", "host": s.host, "title": s.title, "cwd": s.cwd,
                                         "prompt": s.info.prompt ?? "", "steps": s.info.steps.map(\.text),
                                         "visible": h.visible.contains { $0.id == s.id }]

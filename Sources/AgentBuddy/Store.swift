@@ -209,14 +209,23 @@ final class AppModel {
                 r.reply(.passthrough)       // lets the hook exit; Claude Code already has its answer
             }
         }
-        if pending.isEmpty { holdingOpen = false }
+        if pending.isEmpty && !ompWaiting(next) { holdingOpen = false }
     }
 
-    private func announce(old: [Session], new: [Session]) {
+    /// omp approvals can't be answered from the notch, but like a held permission they keep the island open
+    /// until they're answered in omp (or you close it), instead of a 4-second peek.
+    func ompWaiting(_ list: [Session]) -> Bool {
+        list.contains { $0.entrypoint == "omp" && $0.status == .waiting && !quiet.contains($0.id) }
+    }
+
+    func announce(old: [Session], new: [Session]) {
         let before = Dictionary(old.map { ($0.id, $0.status) }, uniquingKeysWith: { a, _ in a })
         for s in new {
             if s.status == .waiting, before[s.id] != .waiting, pending[s.id] == nil {
-                if isFront(s) { quiet.insert(s.id) } else { attention() }
+                if isFront(s) { quiet.insert(s.id) } else {
+                    if s.entrypoint == "omp" { holdingOpen = true }
+                    attention()
+                }
             }
             if s.status == .idle, before[s.id] == .busy { play("Tink") }
         }
@@ -229,7 +238,7 @@ final class AppModel {
             guard let s = next.first(where: { $0.id == id }), pending[id] != nil || s.status == .waiting else { quiet.remove(id); continue }
             guard !isFront(s) else { continue }
             quiet.remove(id)
-            if pending[id] != nil { holdingOpen = true }
+            if pending[id] != nil || s.entrypoint == "omp" { holdingOpen = true }
             attention()
         }
     }
@@ -266,13 +275,13 @@ final class AppModel {
 
     func drop(_ id: UUID) {
         if let key = pending.first(where: { $0.value.id == id })?.key { pending[key] = nil }
-        if pending.isEmpty { holdingOpen = false }
+        if pending.isEmpty && !ompWaiting(sessions) { holdingOpen = false }
     }
 
     func decide(_ sessionId: String, _ decision: HookDecision) {
         guard let r = pending.removeValue(forKey: sessionId) else { return }
         r.reply(decision)
-        if pending.isEmpty { holdingOpen = false }
+        if pending.isEmpty && !ompWaiting(sessions) { holdingOpen = false }
         if case .passthrough = decision, let s = sessions.first(where: { $0.id == sessionId }) { Focus.open(s) }
     }
 
