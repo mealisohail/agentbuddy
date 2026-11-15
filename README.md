@@ -39,8 +39,7 @@ curl -fsSL https://raw.githubusercontent.com/mealisohail/agentbuddy/main/install
 **Homebrew:**
 
 ```sh
-brew tap mealisohail/agentbuddy https://github.com/mealisohail/agentbuddy
-brew install --cask agentbuddy
+brew tap mealisohail/agentbuddy https://github.com/mealisohail/agentbuddy && brew trust mealisohail/agentbuddy && brew install --cask agentbuddy
 ```
 
 **Manual:** download `AgentBuddy.zip` from [Releases](https://github.com/mealisohail/agentbuddy/releases), unzip, move `AgentBuddy.app` to Applications, then **right-click → Open** the first time.

@@ -28,8 +28,8 @@ export function InstallTabs() {
         <p>Installs AgentBuddy into <code>~/Applications</code> and opens it. Run it again any time to update.</p>
       </div>
       <div className="panel" role="tabpanel" id="p-1" aria-labelledby="t-1" hidden={tab !== 1}>
-        <CopyCommand cmd="brew tap mealisohail/agentbuddy https://github.com/mealisohail/agentbuddy" />
-        <CopyCommand cmd="brew install --cask agentbuddy" />
+        <CopyCommand cmd="brew tap mealisohail/agentbuddy https://github.com/mealisohail/agentbuddy && brew trust mealisohail/agentbuddy && brew install --cask agentbuddy" />
+        <p>Updates come with <code>brew upgrade --cask agentbuddy</code>.</p>
       </div>
       <div className="panel" role="tabpanel" id="p-2" aria-labelledby="t-2" hidden={tab !== 2}>
         <div className="btns"><a className="btn lime" href={DOWNLOAD}>Download AgentBuddy.zip</a></div>
