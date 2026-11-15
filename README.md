@@ -5,6 +5,8 @@ https://github.com/user-attachments/assets/2746defc-757a-4786-b602-9ba82e77acd1
 <p align="center">Every Claude Code session, at a glance, in your Mac's notch.<br>
 See who's working, who's done, and who needs you — and answer them without switching windows.</p>
 
+<p align="center"><a href="https://agentbuddymac.vercel.app"><b>Website</b></a> &nbsp;·&nbsp; <a href="#install"><b>Install</b></a> &nbsp;·&nbsp; <a href="https://github.com/mealisohail/agentbuddy/releases/latest"><b>Download</b></a></p>
+
 <p align="center"><img src="docs/collapsed.png" width="560" alt="Collapsed island around the notch"></p>
 
 <p align="center"><img src="docs/expanded.png" width="420" alt="Expanded: permission and question cards, working and idle sessions">
