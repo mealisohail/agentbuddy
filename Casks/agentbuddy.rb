@@ -7,18 +7,23 @@ cask "agentbuddy" do
   desc "Notch island that watches your Claude Code sessions and answers their prompts"
   homepage "https://github.com/mealisohail/agentbuddy"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "AgentBuddy.app"
 
   # Not notarized (no paid Apple Developer account): clear the download quarantine so macOS lets it open.
-  postflight do
-    system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{appdir}/AgentBuddy.app"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{appdir}}/AgentBuddy.app"]
   end
 
   # Take our PermissionRequest hook back out of ~/.claude/settings.json before the app disappears.
-  uninstall_preflight do
-    system_command "#{appdir}/AgentBuddy.app/Contents/MacOS/AgentBuddy", args: ["--uninstall-hook"]
+  uninstall_preflight_steps do
+    run "AgentBuddy.app/Contents/MacOS/AgentBuddy",
+        args:           ["--uninstall-hook"],
+        base:           :appdir,
+        must_succeed:   false,
+        writable_paths: [".claude"],
+        writable_base:  :home
   end
   uninstall quit: "dev.agentbuddy.app"
 
